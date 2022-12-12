@@ -13,7 +13,7 @@ from einops.layers.torch import Rearrange, Reduce
 
 # Embedding
 class Embedding(nn.Module):
-    def __init__(self, in_channels: int = 3, patch_size: int = 16, emb_size: int = 768, img_size: int = 224):
+    def __init__(self, in_channels: int = 3, patch_size: int = 16, emb_size: int = 768, img_size: int = 384):
         self.patch_size = patch_size
         super().__init__()
         # patch embedding
@@ -179,17 +179,23 @@ class ViT(nn.Module):
                 in_channels: int = 3,
                 patch_size: int = 16,
                 emb_size: int = 768,
-                img_size: int = 224,
+                img_size: int = 384,
                 depth: int = 12,
                 n_classes: int = 1000,
                 **kwargs):
         super().__init__()
-        self.vit = nn.Sequential(Embedding(in_channels, patch_size, emb_size, img_size),
-                                 TransformerEncoder(depth, emb_size=emb_size, **kwargs),
-                                 ClassificationHead(emb_size, n_classes),)
+        self.embedding = Embedding(in_channels, patch_size, emb_size, img_size)
+        self.transformerencoder = TransformerEncoder(depth, emb_size=emb_size, **kwargs)
+        self.classificationhead = ClassificationHead(emb_size, n_classes)
 
     def forward(self, x: Tensor) -> Tensor:
-        return self.vit(x)
+        '''
+        vit = self.embedding(x)
+        vit = self.transformerencoder(vit)
+        vit = self.classificationhead(vit)
+        '''
+        vit = nn.Sequential(self.embedding, self.transformerencoder, self.classificationhead)(x)
+        return vit
 '''
 class ViT(nn.Sequential):
     def __init__(self,
@@ -209,4 +215,4 @@ class ViT(nn.Sequential):
 
 if __name__ == '__main__':
 
-    summary(ViT(), (3, 224, 224), device='cpu')
+    summary(ViT(), (3, 384, 384), device='cpu')
