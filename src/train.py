@@ -147,8 +147,3 @@ if __name__ == '__main__':
     # train
     save_dir = os.path.join(os.getcwd().split(os.path.sep + 'src')[0], "checkpoints")
     train(model, criterion, optimizer, scheduler, save_dir, num_epochs=5)
-
-
-    list(model.children())[-1]
-
-    nn.Sequential(*list(model.children()))
